@@ -56,26 +56,13 @@ DT[, Multiplier := ifelse(OutHumi<85, 0.995,
                           1+((5^(OutTemp/20))/100))
    ]
 DT[, Score := 1]
-DT[, Spray := NA]
-# Spray started to take affect one week after 
-# 7 DAYS * 24 HOURS, SO 168 rows after 
-spraycount <- 168
-
-# Add spray
-# DT$Spray[20] <- 1
-
 for (i in 2:nrow(DT)){
   DT$Score[i] <- ifelse(DT$Score[i-1] * DT$Multiplier[i] < 1, 1,
                         DT$Score[i-1] * DT$Multiplier[i])
   # Started from 8th September 
   # Check spray column 
   # If the spray column = true, reset the score to 1 
-  if(spraycount <= nrow(DT)) {
-    DT$Score[spraycount] <- ifelse(DT$Spray[i - 1] == 1, 1, 
-                                   DT$Score[spraycount])
-    spraycount <- spraycount + 1 
-  }
-
+  
   }
 # str(DT)
 DT %>% 
@@ -83,3 +70,19 @@ DT %>%
   geom_line() +
   geom_line(aes(y = RainDay )) +
   geom_smooth(aes(y = OutTemp), span = 0.05)
+
+
+DT[, Spray := as.integer(NA)]
+# Spray started to take affect one week after 
+# 7 DAYS * 24 HOURS, SO 168 rows after 
+spraycount <- 168
+
+# Add spray
+DT$Spray[20] <- 1L
+
+
+if(spraycount <= nrow(DT)) {
+  DT$Score[spraycount] <- ifelse(DT$Spray[i - 1] == 1L, 1, 
+                                 DT$Score[spraycount])
+  spraycount <- spraycount + 1 
+}
