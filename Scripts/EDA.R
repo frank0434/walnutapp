@@ -65,11 +65,22 @@ for (i in 2:nrow(DT)){
   
   }
 # str(DT)
+DT %>% colnames()
+legendcols <-c("red", "blue", "green")
+names(legendcols) <-  c("Score", "OutTemp", "RainDay")
 DT %>% 
   ggplot(aes(Time, Score)) +
-  geom_line() +
-  geom_line(aes(y = RainDay )) +
-  geom_smooth(aes(y = OutTemp), span = 0.05)
+  geom_line(aes(color= "Score"), size = 1.5) +
+  geom_smooth(aes(y = OutTemp, color = "OutTemp"), span = 0.05, se = FALSE) +
+  geom_line(aes(y = RainDay, color = "RainDay"), size = 1) +
+  theme_linedraw() +
+  scale_color_manual(name = "",
+                     values = legendcols,
+                     labels = c("Blight Score", "Temperature", "24 Hour Rain"))+
+  theme(panel.grid.major.x = element_blank(), 
+        panel.grid.minor.x = element_blank(),
+        legend.key.width = unit(15, "mm"),
+        legend.key = element_rect(colour =  "transparent", fill = "white"))
 
 
 DT[, Spray := as.integer(NA)]
