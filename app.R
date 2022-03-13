@@ -13,16 +13,29 @@ library(shiny)
 ui <- fluidPage(
 
     # Application title
-    titlePanel("Old Faithful Geyser Data"),
+    titlePanel("Walnut blight spray app"),
 
     # Sidebar with a slider input for number of bins 
     sidebarLayout(
         sidebarPanel(
             textInput(inputId = "cliflo_user", 
                       label = "Cliflo account username"), 
+            passwordInput(inputId = "cliflo_pass", 
+                          label = "Cliflo account password"),
             dateRangeInput(inputId = "date_range", 
                            label = "Climate period",
-                           start = "2021-09-01")
+                           start = "2021-09-01"),
+            submitButton(text = "Download weather data"),
+            hr(),
+            h3("Spray application"),
+            dateInput(inputId = "spray_day",
+                      label = "Date of application"),
+            textInput(inputId = "spray_time", 
+                      label = "Time of application", 
+                      # value = "00", 
+                      placeholder = "Please input hours as 00 to 23"),
+            submitButton()
+            
             
         ),
 
