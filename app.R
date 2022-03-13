@@ -25,7 +25,8 @@ ui <- fluidPage(
             dateRangeInput(inputId = "date_range", 
                            label = "Climate period",
                            start = "2021-09-01"),
-            submitButton(text = "Download weather data"),
+            actionButton(inputId = "download_climate",
+                         label = "Download weather data", class = "btn-info"),
             hr(),
             h3("Spray application"),
             dateInput(inputId = "spray_day",
@@ -34,7 +35,8 @@ ui <- fluidPage(
                       label = "Time of application", 
                       # value = "00", 
                       placeholder = "Please input hours as 00 to 23"),
-            submitButton()
+            actionButton(inputId = "apply_spray",
+                         label = "Apply spray", class = "btn-success")
             
             
         ),
