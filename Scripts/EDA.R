@@ -95,9 +95,15 @@ DT[, Day := as.Date(Time, tz = "NZ")
 # Multiplier=IF(Humidity<85,0.995,1+((5^(Temperature/20))/100))
 # Score = =IF(Score(previous)*Multiplier<1,1,Score(previous)*Muliplier)
 
+
+# deal with NAs -----------------------------------------------------------
+
+# sapply(DT, function(x) sum(is.na(x)))
+
+setnafill(DT, type = "locf")
+
 DT[, Multiplier := ifelse(OutHumi<85, 0.995,
-                          1+((5^(OutTemp/20))/100))
-   ]
+                          1+((5^(OutTemp/20))/100))]
 DT[, Score := 1]
 for (i in 2:nrow(DT)){
   DT$Score[i] <- ifelse(DT$Score[i-1] * DT$Multiplier[i] < 1, 1,
