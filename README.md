@@ -1,3 +1,3 @@
 # walnutapp
 
-Convernt excel tool into shiny app
+Convert excel tool into shiny app
