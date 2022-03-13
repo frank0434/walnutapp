@@ -60,12 +60,13 @@ ui <- fluidPage(
 
 # Define server logic required to draw a histogram ----------
 server <- function(input, output) {
-    # add NIWA STATION 
+    # input session
+    ## add NIWA STATION 
     user <- reactive({ input$cliflo_user })
     pass <- reactive({ input$cliflo_pass })
-    # input dates
+    ## input dates
     date_range <- reactive({ input$date_range })
-    # agent_no
+    ## agent_no
     agent_no <- reactive({ input$agent_no })
     ## Checking input formats
     download_weather <- eventReactive(input$download_climate,
@@ -73,6 +74,16 @@ server <- function(input, output) {
                                           paste(user(), pass(), date_range()[1],
                                                  date_range()[2])
                                       })
+    ## input spray dates
+    spray_datetime <- eventReactive(input$apply_spray,
+                                    {
+                                        datetime <- paste(input$spray_day, 
+                                                          input$spray_time)
+                                        datetime <- format(datetime, 
+                                                           format = "%Y-%m-%d hh:mm:ss",
+                                                           tz= "NZ")
+                                        datetime
+                                    })
     # Climate data
     climate <- eventReactive(input$download_climate,{
         me <- cf_user(username = user(), password = pass())
@@ -119,7 +130,34 @@ server <- function(input, output) {
         }
         DT
     })
-    # plot constants
+    # apply spray
+    sprayed <- reactive({
+        DT <- scores()
+        DT[, Spray := as.integer(NA)]
+        # Spray started to take affect one week after 
+        # 7 DAYS * 24 HOURS, SO 168 rows after 
+        spraylag <- 168
+        sprayeffect <- 169
+        # Add spray
+        
+        DT[Time == spray_datetime(), Spray := 1L]
+        
+        
+        if(sprayeffect <= nrow(DT)) {
+            for (i in sprayeffect:nrow(DT)){
+                DT$Score[i] <- ifelse(is.na(DT$Spray[i - spraylag]), 
+                                      ifelse(DT$Score[i - 1] * DT$Multiplier[i] < 1, 1,
+                                             DT$Score[i - 1] * DT$Multiplier[i]),
+                                      1L)
+                # Started from 8th September 
+                # Check spray column 
+                # If the spray column = true, reset the score to 1 
+                
+            }
+            sprayeffect <- sprayeffect + 1 
+        }
+        DT
+    })
 
 ### Render output 
     # output$check <- renderText({
@@ -142,10 +180,17 @@ server <- function(input, output) {
         
     })
     output$Post_spray <- renderPlot({
-        # generate bins based on input$bins from ui.R
-        
-        
-        # draw the histogram with the specified number of bins
+        legendcols <- c("red", "blue", "green")
+        names(legendcols) <-  c("Score", "OutTemp", "RainDay")
+        sprayed() %>% 
+            ggplot(aes(Time, Score)) +
+            geom_line(aes(color= "Score"), size = 1.5) +
+            geom_smooth(aes(y = OutTemp, color = "OutTemp"), span = 0.05, se = FALSE) +
+            geom_line(aes(y = RainDay, color = "RainDay"), size = 1)  +
+            scale_color_manual(name = "",
+                               values = legendcols,
+                               labels = c("Blight Score", "Temperature", "24 Hour Rain"))+
+            theme_walnut()
     })
 }
 
@@ -154,6 +199,7 @@ server <- function(input, output) {
 
 
 theme_walnut <- function(){
+    
     theme_linedraw()+
         theme(panel.grid.major.x = element_blank(), 
               panel.grid.minor.x = element_blank(),
