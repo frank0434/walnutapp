@@ -120,24 +120,26 @@ server <- function(input, output) {
         DT
     })
     # plot constants
-    legendcols <- reactive({
+
+### Render output 
+    # output$check <- renderText({
+    #     download_weather()
+    # })
+    # output$check_dt <- renderDataTable({climate()})
+    output$No_spray <- renderPlot({
         legendcols <- c("red", "blue", "green")
         names(legendcols) <-  c("Score", "OutTemp", "RainDay")
-        })
-    
- 
-    
-    
-### Render output 
-    output$check <- renderText({
-        download_weather()
-    })
-    output$check_dt <- renderDataTable({climate()})
-    output$No_spray <- renderPlot({
-        # generate bins based on input$bins from ui.R
-       
-
-        # draw the histogram with the specified number of bins
+        
+        scores() %>% 
+            ggplot(aes(Time, Score)) +
+            geom_line(aes(color= "Score"), size = 1.5) +
+            geom_smooth(aes(y = OutTemp, color = "OutTemp"), span = 0.05, se = FALSE) +
+            geom_line(aes(y = RainDay, color = "RainDay"), size = 1)  +
+            scale_color_manual(name = "",
+                               values = legendcols,
+                               labels = c("Blight Score", "Temperature", "24 Hour Rain"))+
+            theme_walnut()
+        
     })
     output$Post_spray <- renderPlot({
         # generate bins based on input$bins from ui.R
@@ -145,6 +147,19 @@ server <- function(input, output) {
         
         # draw the histogram with the specified number of bins
     })
+}
+
+
+# functions ---------------------------------------------------------------
+
+
+theme_walnut <- function(){
+    theme_linedraw()+
+        theme(panel.grid.major.x = element_blank(), 
+              panel.grid.minor.x = element_blank(),
+              legend.key.width = unit(15, "mm"),
+              legend.key = element_rect(colour =  "transparent", fill = "white"))
+    
 }
 
 # Run the application 
