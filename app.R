@@ -51,7 +51,7 @@ ui <- fluidPage(
         # Show a plot of the generated distribution
         mainPanel(
             # textOutput("check"),
-            tableOutput("check_dt"),
+            # dataTableOutput("check_dt"),
            plotOutput("No_spray"),
            plotOutput("Post_spray")
         )
@@ -105,7 +105,7 @@ server <- function(input, output) {
     output$check <- renderText({
         download_weather()
     })
-    output$check_dt <- renderTable({climate()})
+    output$check_dt <- renderDataTable({climate()})
     output$No_spray <- renderPlot({
         # generate bins based on input$bins from ui.R
        
