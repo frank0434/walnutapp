@@ -28,6 +28,28 @@ library(readxl)
 library(data.table)
 library(magrittr)
 library(ggplot2)
+library(clifro)
+
+
+# add NIWA STATION --------------------------------------------------------
+
+me <- cf_user("frank0434", askpass::askpass())
+my.dts <- cf_datatype(c( 3, 4), #rainfall, temperature 
+                      c( 1, 2),
+                      list( 2, 4),
+                      c(NA,NA))
+# Broadfield weather station
+agent_no <- as.integer(17603)
+my.stations <- cf_station(agent_no)
+
+cf.datalist <- cf_query(user = me,
+                        datatype = my.dts,
+                        station = my.stations,
+                        start_date = paste(as.Date("2021-09-01"), "00"),
+                        end_date = paste(as.Date("2021-09-30"), "23"))
+View(cf.datalist)
+Rain <- as.data.table(cf.datalist[[1]])
+Temp <- as.data.table(cf.datalist[[2]])
 
 # skip the download part
 # Download data from cliflo yet to be included 
