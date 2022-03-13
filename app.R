@@ -90,13 +90,34 @@ server <- function(input, output) {
         
         Rain <- as.data.table(cf.datalist[[1]])
         Temp <- as.data.table(cf.datalist[[2]])
-        # station information feedback --------------------------------------------
+        # tidy up 
         rain_renamed <- Rain[, .(Time = `Date(local)`, RainHour = `Amount(mm)`)]
         temp_renamed <- Temp[, .(Time = `Date(local)`, OutTemp = `Tmean(C)`, 
                                  OutHumi = `RHmean(%)`)]
+        # merge rain and temperature
         DT <- merge.data.table(temp_renamed, rain_renamed, by = "Time")
+        DT <- DT[, Day := as.Date(Time, tz = "NZ")
+                 ][, RainDay := cumsum(RainHour), by = .(Day)]
+        # Fill NAs
+        setnafill(DT, type = "locf")
         DT
         
+    })
+    # calculate 
+    scores <- reactive({
+        DT <- climate()
+        DT[, Multiplier := ifelse(OutHumi<85, 0.995,
+                                  1+((5^(OutTemp/20))/100))]
+        DT[, Score := 1]
+        for (i in 2:nrow(DT)){
+            DT$Score[i] <- ifelse(DT$Score[i-1] * DT$Multiplier[i] < 1, 1,
+                                  DT$Score[i-1] * DT$Multiplier[i])
+            # Started from 8th September 
+            # Check spray column 
+            # If the spray column = true, reset the score to 1 
+            
+        }
+        DT
     })
  
     
