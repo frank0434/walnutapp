@@ -119,6 +119,12 @@ server <- function(input, output) {
         }
         DT
     })
+    # plot constants
+    legendcols <- reactive({
+        legendcols <- c("red", "blue", "green")
+        names(legendcols) <-  c("Score", "OutTemp", "RainDay")
+        })
+    
  
     
     
