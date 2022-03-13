@@ -136,9 +136,9 @@ spraylag <- 168
 sprayeffect <- 169
 # Add spray
 DT$Spray[68] <- 1L
-
-
-if(spraycount <= nrow(DT)) {
+format("2021-09-30 01:00:00", format = "%Y-%m-%d hh:mm:ss", tz= "NZ")
+?as.Date.Pos
+if(sprayeffect <= nrow(DT)) {
   for (i in sprayeffect:nrow(DT)){
     DT$Score[i] <- ifelse(is.na(DT$Spray[i - spraylag]), 
                           ifelse(DT$Score[i - 1] * DT$Multiplier[i] < 1, 1,
