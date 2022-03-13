@@ -68,32 +68,49 @@ for (i in 2:nrow(DT)){
 DT %>% colnames()
 legendcols <-c("red", "blue", "green")
 names(legendcols) <-  c("Score", "OutTemp", "RainDay")
-DT %>% 
+no_spray <- DT %>% 
   ggplot(aes(Time, Score)) +
   geom_line(aes(color= "Score"), size = 1.5) +
   geom_smooth(aes(y = OutTemp, color = "OutTemp"), span = 0.05, se = FALSE) +
-  geom_line(aes(y = RainDay, color = "RainDay"), size = 1) +
-  theme_linedraw() +
+  geom_line(aes(y = RainDay, color = "RainDay"), size = 1)  +
   scale_color_manual(name = "",
                      values = legendcols,
                      labels = c("Blight Score", "Temperature", "24 Hour Rain"))+
-  theme(panel.grid.major.x = element_blank(), 
-        panel.grid.minor.x = element_blank(),
-        legend.key.width = unit(15, "mm"),
-        legend.key = element_rect(colour =  "transparent", fill = "white"))
+  theme_walnut()
 
+no_spray  
 
 DT[, Spray := as.integer(NA)]
 # Spray started to take affect one week after 
 # 7 DAYS * 24 HOURS, SO 168 rows after 
-spraycount <- 168
-
+spraylag <- 168
+sprayeffect <- 169
 # Add spray
-DT$Spray[20] <- 1L
+DT$Spray[68] <- 1L
 
 
 if(spraycount <= nrow(DT)) {
-  DT$Score[spraycount] <- ifelse(DT$Spray[i - 1] == 1L, 1, 
-                                 DT$Score[spraycount])
-  spraycount <- spraycount + 1 
+  for (i in sprayeffect:nrow(DT)){
+    DT$Score[i] <- ifelse(is.na(DT$Spray[i - spraylag]), 
+                          ifelse(DT$Score[i - 1] * DT$Multiplier[i] < 1, 1,
+                          DT$Score[i - 1] * DT$Multiplier[i]),
+                          1L)
+    # Started from 8th September 
+    # Check spray column 
+    # If the spray column = true, reset the score to 1 
+    
+  }
+  sprayeffect <- sprayeffect + 1 
 }
+
+post_spray <-  DT %>% 
+  ggplot(aes(Time, Score)) +
+  geom_line(aes(color= "Score"), size = 1.5) +
+  geom_smooth(aes(y = OutTemp, color = "OutTemp"), span = 0.05, se = FALSE) +
+  geom_line(aes(y = RainDay, color = "RainDay"), size = 1)  +
+  scale_color_manual(name = "",
+                     values = legendcols,
+                     labels = c("Blight Score", "Temperature", "24 Hour Rain"))+
+  theme_walnut()
+
+post_spray
