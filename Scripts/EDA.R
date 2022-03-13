@@ -32,8 +32,14 @@ library(clifro)
 
 
 # add NIWA STATION --------------------------------------------------------
+user <- "frank0434"
+pass <- "havelock"
+## input dates
 
-me <- cf_user("frank0434", askpass::askpass())
+st_date <- paste(as.Date("2021-09-01"), "00")
+ed_date <- paste(as.Date("2021-09-30"), "23")
+
+me <- cf_user(username = user, password = pass)
 my.dts <- cf_datatype(c( 3, 4), #rainfall, temperature 
                       c( 1, 2),
                       list( 2, 4),
@@ -42,29 +48,44 @@ my.dts <- cf_datatype(c( 3, 4), #rainfall, temperature
 agent_no <- as.integer(17603)
 my.stations <- cf_station(agent_no)
 
+
 cf.datalist <- cf_query(user = me,
                         datatype = my.dts,
                         station = my.stations,
-                        start_date = paste(as.Date("2021-09-01"), "00"),
-                        end_date = paste(as.Date("2021-09-30"), "23"))
+                        start_date = st_date,
+                        end_date = ed_date)
 View(cf.datalist)
 Rain <- as.data.table(cf.datalist[[1]])
 Temp <- as.data.table(cf.datalist[[2]])
 
+
+# station information feedback --------------------------------------------
+
+station_name <- as.character(unique(Rain$Station))
+rain_renamed <- Rain[, .(Time = `Date(local)`, RainHour = `Amount(mm)`)]
+temp_renamed <- Temp[, .(Time = `Date(local)`, OutTemp = `Tmean(C)`, 
+                         OutHumi = `RHmean(%)`)]
+DT <- merge.data.table(temp_renamed, rain_renamed, by = "Time")
+DT[, Day := as.Date(Time, tz = "NZ")
+   ][, RainDay := cumsum(RainHour), by = .(Day)][]
+
+# calculate daily rain ----------------------------------------------------
+
+
 # skip the download part
 # Download data from cliflo yet to be included 
 # Started from download 
-export <- read_excel("./Data/Download.xlsx") %>% 
-  data.table()
-
-summary(export)
-colnames(export)
-# Need Rainhr and RainDay 
-# Need outtemp and outhumi
-# And Time
-cols <- c("Time", "OutTemp", "OutHumi",
-          "RainDay", "RainHour")
-DT <- export[,..cols]
+# export <- read_excel("./Data/Download.xlsx") %>% 
+#   data.table()
+# 
+# summary(export)
+# colnames(export)
+# # Need Rainhr and RainDay 
+# # Need outtemp and outhumi
+# # And Time
+# cols <- c("Time", "OutTemp", "OutHumi",
+#           "RainDay", "RainHour")
+# DT <- export[,..cols]
 
 # For each hourly result of relative humidity the spreadsheet calculates…
 # If RH<85% it uses the default reducing factor of 0.995
