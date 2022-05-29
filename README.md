@@ -1,3 +1,3 @@
 # walnutapp
 
-Convert excel tool into shiny app
+Convert excel tool (walnut spray) into shiny app
